@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apple Picking Game</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f1f8ed; color: #243729; font-family: Arial, sans-serif; }
+  main { max-width: 960px; margin: 30px auto; padding: 24px; text-align: center; }
+  h1 { margin: 0 0 10px; font-size: clamp(28px, 5vw, 44px); }
+  p { line-height: 1.6; }
+  .score { font-size: 22px; font-weight: bold; }
+  .garden { position: relative; height: 460px; margin: 24px 0; overflow: hidden; border-radius: 24px; background: #dff0d2; }
+  .trunk { position: absolute; left: 45%; bottom: 12px; width: 10%; height: 260px; border-radius: 15px; background: #8a5c3c; }
+  .leaves { position: absolute; left: 8%; top: 20px; width: 84%; height: 360px; border-radius: 48%; background: #3e7c45; }
+  .apples { position: absolute; left: 8%; right: 8%; top: 20px; height: 360px; }
+  .apple { position: absolute; width: 64px; height: 64px; padding: 0; border: 0; background: transparent; font-size: 48px; cursor: pointer; transform: translate(-50%, -50%) rotate(var(--tilt)); transition: transform .15s; }
+  .apple:hover { transform: translate(-50%, -50%) rotate(var(--tilt)) scale(1.16); }
+  .apple:focus-visible { outline: 3px solid #fff; border-radius: 14px; }
+  .apple:disabled { visibility: hidden; }
+  #message { min-height: 32px; font-size: 21px; font-weight: bold; }
+  #restart { padding: 12px 26px; border: 0; border-radius: 10px; background: #255e34; color: white; font-size: 18px; cursor: pointer; }
+  @media (max-width: 900px) {
+    .leaves { left: 5%; width: 90%; }
+    .apples { left: 5%; right: 5%; }
+    .apple { width: 48px; height: 48px; font-size: 38px; }
+  }
+  @media (max-width: 500px) { main { padding: 16px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>🍎 Apple Picking Game</h1>
+  <p>나무의 사과를 클릭해서 모두 모아 보세요!</p>
+  <div class="score" aria-live="polite">수확한 사과: <span id="score">0</span> / <span id="total">10</span></div>
+  <div class="garden" id="garden" aria-label="사과나무">
+    <div class="trunk" aria-hidden="true"></div>
+    <div class="leaves" aria-hidden="true"></div>
+    <div class="apples" id="apples" role="group" aria-label="수확할 사과"></div>
+  </div>
+  <p id="message" role="status">사과를 눌러 수확을 시작하세요.</p>
+  <button id="restart" type="button">다시 시작</button>
+</main>
+<script>
+  const positions = [[31, 18, -12], [64, 25, 9], [17, 43, -6],
+                     [45, 42, 14], [80, 45, -10], [31, 63, 6],
+                     [63, 61, -14], [20, 80, 8], [48, 82, -7],
+                     [76, 78, 12]];
+  const appleCount = positions.length;
+  const appleArea = document.querySelector('#apples');
+  const scoreText = document.querySelector('#score');
+  const totalText = document.querySelector('#total');
+  const message = document.querySelector('#message');
+  let score = 0;
+
+  function startGame() {
+    score = 0;
+    scoreText.textContent = score;
+    totalText.textContent = appleCount;
+    message.textContent = '사과를 눌러 수확을 시작하세요.';
+    appleArea.querySelectorAll('.apple').forEach(apple => apple.remove());
+
+    for (let index = 0; index < appleCount; index += 1) {
+      const [left, top, tilt] = positions[index];
+      const apple = document.createElement('button');
+      apple.type = 'button';
+      apple.className = 'apple';
+      apple.textContent = '🍎';
+      apple.style.left = left + '%';
+      apple.style.top = top + '%';
+      apple.style.setProperty('--tilt', tilt + 'deg');
+      apple.setAttribute('aria-label', (index + 1) + '번 사과 수확');
+      apple.addEventListener('click', () => {
+        if (apple.disabled) return;
+        apple.disabled = true;
+        score += 1;
+        scoreText.textContent = score;
+        message.textContent = score === appleCount
+          ? `🎉 성공! 사과 ${appleCount}개를 모두 수확했어요!`
+          : '좋아요! 남은 사과도 모아 보세요.';
+      });
+      appleArea.appendChild(apple);
+    }
+  }
+
+  document.querySelector('#restart').addEventListener('click', startGame);
+  startGame();
+</script>
+</body>
+</html>
